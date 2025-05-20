@@ -1,11 +1,11 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import os
 import json
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "mysecret123"  # Use the same token as in your Facebook app webhook
-LEAD_FILE = "leads.txt"
+VERIFY_TOKEN = "mysecret123"  # Facebook webhook verify token
+LEAD_FILE = "leads.json"
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
@@ -24,14 +24,22 @@ def webhook():
             data = request.get_json()
             print("Received lead data:", json.dumps(data, indent=2))
 
-            with open(LEAD_FILE, "a") as f:
-                for entry in data.get("entry", []):
-                    for change in entry.get("changes", []):
-                        lead_info = change.get("value", {})
-                        name = lead_info.get("full_name", "No Name")
-                        phone = lead_info.get("phone_number", "No Number")
+            # Read existing leads from file or create new list
+            if os.path.exists(LEAD_FILE):
+                with open(LEAD_FILE, "r") as f:
+                    leads_list = json.load(f)
+            else:
+                leads_list = []
 
-                        f.write(f"Name: {name}, Phone: {phone}\n")
+            # Extract lead info and append to leads_list
+            for entry in data.get("entry", []):
+                for change in entry.get("changes", []):
+                    lead_info = change.get("value", {})
+                    leads_list.append(lead_info)
+
+            # Save updated leads list back to file
+            with open(LEAD_FILE, "w") as f:
+                json.dump(leads_list, f, indent=2)
 
             return "Success", 200
 
@@ -39,7 +47,6 @@ def webhook():
             print("Error processing lead:", str(e))
             return "Internal Server Error", 500
 
-# Optional root route to check if server is running
 @app.route("/")
 def home():
     return "Webhook is live!", 200
