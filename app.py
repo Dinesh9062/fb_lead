@@ -1,36 +1,7 @@
-from flask import Flask, request
-import os
-import json
+from flask import Flask
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "mysecret123"  # Must match the verify token on Facebook Webhook
-LEAD_FILE = "leads.txt"
-
-@app.route("/webhook", methods=["GET", "POST"])
-def webhook():
-    if request.method == "GET":
-        mode = request.args.get("hub.mode")
-        token = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
-
-        if mode == "subscribe" and token == VERIFY_TOKEN:
-            return challenge, 200
-        else:
-            return "Verification failed", 403
-
-    elif request.method == "POST":
-        data = request.json
-        print("Received lead data: ", data)
-
-        # Save formatted data to text file
-        with open(LEAD_FILE, "a") as f:
-            for entry in data.get("entry", []):
-                for change in entry.get("changes", []):
-                    lead_info = change.get("value", {})
-                    name = lead_info.get("full_name", "No Name")
-                    phone = lead_info.get("phone_number", "No Number")
-
-                    f.write(f"Name: {name}, Phone: {phone}\n")
-
-        return "Success", 200
+@app.route('/')
+def home():
+    return 'Hello from Flask on Render!'
