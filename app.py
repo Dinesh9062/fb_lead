@@ -1,10 +1,10 @@
 from flask import Flask, request
-import json
 import os
+import json
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "mysecret123"  # Use same token on Facebook Webhook setup
+VERIFY_TOKEN = "mysecret123"  # Must match the verify token on Facebook Webhook
 LEAD_FILE = "leads.txt"
 
 @app.route("/webhook", methods=["GET", "POST"])
@@ -23,7 +23,7 @@ def webhook():
         data = request.json
         print("Received lead data: ", data)
 
-        # Create or append lead details to a text file
+        # Save formatted data to text file
         with open(LEAD_FILE, "a") as f:
             for entry in data.get("entry", []):
                 for change in entry.get("changes", []):
