@@ -5,11 +5,12 @@ import requests
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "mysecret123"   # Facebook webhook verification token
+# Facebook webhook verify token & page access token
+VERIFY_TOKEN = "mysecret123"
 PAGE_ACCESS_TOKEN = "EAAKIaXjho1IBO5Y7sfs2hJSrwQ4BNRGUFKQM96MyWSVZBZBdNOSK6K7tgQC92DLaqVM6K3MAHhHb27VDVLWXIPZApwCoXK4wBEqLKwufwTAegGvvgmLwZBCu2l5X4FlHAJNkA5aasqwfSeN4sv0J5hZAhQpNTZB8xdWLnY3iPZAResN9LBZAHP1ZAoxhi7N3wHbabhJZAEHS9AQFeJvBPlxQuUnKlaw84ZD"
 
+# Function to fetch lead details from Facebook Graph API
 def get_lead_details(leadgen_id):
-    """Facebook Graph API से lead details fetch करें"""
     url = f"https://graph.facebook.com/v17.0/{leadgen_id}"
     params = {
         "access_token": PAGE_ACCESS_TOKEN,
@@ -22,6 +23,7 @@ def get_lead_details(leadgen_id):
         print(f"❌ Error fetching lead details: {response.text}")
         return None
 
+# Webhook route
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
     if request.method == "GET":
@@ -41,6 +43,7 @@ def webhook():
             print("📩 Received webhook data:")
             print(json.dumps(data, indent=2))
 
+            # Check if it's a leadgen event
             if data.get("object") == "page":
                 for entry in data.get("entry", []):
                     for change in entry.get("changes", []):
@@ -58,9 +61,11 @@ def webhook():
             print("❌ Error processing lead:", str(e))
             return "Internal Server Error", 500
 
+# Root route
 @app.route("/")
 def home():
     return "Webhook is live!", 200
 
+# Run Flask app
 if __name__ == "__main__":
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))
