@@ -5,10 +5,10 @@ import requests
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "mysecret123"   # ये Facebook webhook verification token होना चाहिए
+VERIFY_TOKEN = "mysecret123"   # ये Facebook webhook verification token
 PAGE_ACCESS_TOKEN = "EAAKIaXjho1IBO5Y7sfs2hJSrwQ4BNRGUFKQM96MyWSVZBZBdNOSK6K7tgQC92DLaqVM6K3MAHhHb27VDVLWXIPZApwCoXK4wBEqLKwufwTAegGvvgmLwZBCu2l5X4FlHAJNkA5aasqwfSeN4sv0J5hZAhQpNTZB8xdWLnY3iPZAResN9LBZAHP1ZAoxhi7N3wHbabhJZAEHS9AQFeJvBPlxQuUnKlaw84ZD"  # Facebook Page Access Token डालें यहाँ
 
-LEAD_FILE = "leads.json"       # Leads save करने वाली फाइल
+LEAD_FILE = "leads.json"       # Leads save
 
 def get_lead_details(leadgen_id):
     """Facebook Graph API से lead details fetch करें"""
