@@ -1,15 +1,15 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import os
 import json
 import requests
 
 app = Flask(__name__)
 
-# Facebook tokens
+# Your Facebook tokens
 VERIFY_TOKEN = "mysecret123"
 PAGE_ACCESS_TOKEN = "EAAKIaXjho1IBOyVeZA1OYYM5dXdFgl0VErf1QAKCdyeCnqBDHnuXTJJQOcb9IOTwYvGTFWZBkC7psTD6YQvyUhEtVwYZBCDyBLZCYgNAb28S4WwwcAG5SjRoPdZAuvm8NXwHqjFY8DddvFvyvrpZAUyHRhS6GCmrlSOa95asjgMaOfNWXiCKF4X6VATBniGPJf4BQ7WXEzrKIH0eeECymIaqzwjgDYQegV"
 
-# Get lead details from Facebook
+# Get lead details using leadgen_id
 def get_lead_details(leadgen_id):
     url = f"https://graph.facebook.com/v17.0/{leadgen_id}"
     params = {
@@ -20,7 +20,8 @@ def get_lead_details(leadgen_id):
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"❌ Error fetching lead details: {response.text}")
+        print("❌ Error fetching lead details:")
+        print(response.text)
         return None
 
 # Webhook Endpoint
@@ -47,21 +48,23 @@ def webhook():
             for entry in data.get("entry", []):
                 for change in entry.get("changes", []):
                     if change.get("field") == "leadgen":
+                        print("🔔 Leadgen event detected")
                         leadgen_id = change["value"].get("leadgen_id")
+                        print(f"📌 Leadgen ID: {leadgen_id}")
                         if leadgen_id:
                             lead_details = get_lead_details(leadgen_id)
                             if lead_details:
-                                print("✅ New Lead Received:")
+                                print("✅ Lead Data Received:")
                                 for field in lead_details.get("field_data", []):
-                                    print(f"{field['name']}: {field['values']}")
+                                    print(f"{field['name']}: {', '.join(field['values'])}")
                             else:
                                 print("⚠️ No lead details found.")
         return "EVENT_RECEIVED", 200
 
 @app.route("/")
 def home():
-    return "Webhook is live!", 200
+    return "✅ Webhook is live!", 200
 
-# Run app
+# Run the Flask app
 if __name__ == "__main__":
     app.run(debug=True, port=int(os.environ.get("PORT", 5000)))
