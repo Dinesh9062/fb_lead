@@ -1,9 +1,11 @@
 from flask import Flask, request
-import requests
+import json
+import os
 
 app = Flask(__name__)
 
 VERIFY_TOKEN = "mysecret123"  # Use same token on Facebook Webhook setup
+LEAD_FILE = "leads.txt"
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
@@ -21,40 +23,14 @@ def webhook():
         data = request.json
         print("Received lead data: ", data)
 
-        # Example: Send lead to Odoo (update below URL and token)
-        for entry in data.get("entry", []):
-            for change in entry.get("changes", []):
-                lead_info = change.get("value", {})
-                name = lead_info.get("full_name", "No Name")
-                phone = lead_info.get("phone_number", "No Number")
+        # Create or append lead details to a text file
+        with open(LEAD_FILE, "a") as f:
+            for entry in data.get("entry", []):
+                for change in entry.get("changes", []):
+                    lead_info = change.get("value", {})
+                    name = lead_info.get("full_name", "No Name")
+                    phone = lead_info.get("phone_number", "No Number")
 
-                # Send to Odoo (update this part as per your Odoo setup)
-                odoo_url = "https://your-odoo-domain.com/jsonrpc"
-                headers = {"Content-Type": "application/json"}
-
-                payload = {
-                    "jsonrpc": "2.0",
-                    "method": "call",
-                    "params": {
-                        "service": "object",
-                        "method": "execute_kw",
-                        "args": [
-                            "your-db-name",  # database
-                            1,               # user ID
-                            "your-password", # password
-                            "crm.lead",      # model
-                            "create",        # method
-                            [{
-                                "name": name,
-                                "contact_name": name,
-                                "phone": phone,
-                                "description": "Lead from Facebook",
-                            }]
-                        ]
-                    },
-                    "id": 1
-                }
-
-                requests.post(odoo_url, json=payload, headers=headers)
+                    f.write(f"Name: {name}, Phone: {phone}\n")
 
         return "Success", 200
